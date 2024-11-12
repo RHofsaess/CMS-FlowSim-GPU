@@ -431,7 +431,7 @@ def save_cfm_model(model, epoch, lr, name, input_dim, context_dim, base_kwargs, 
 
 def resume_cfm_model(path, filename):
     p = Path(path)
-    dict = torch.load(p / filename)
+    dict = torch.load(p / filename, map_location=torch.device("cpu"))
 
     model = build_cfm_model(
         input_dim=dict["input_dim"],

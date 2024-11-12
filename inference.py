@@ -1,4 +1,4 @@
-# inferece benchmarking script for CFM model. usage: python inference.py --model-path /path/to/model.pt --config-path /path/to/config.yaml --source-file /path/to/data --n-objects 1000 --batch-size 32 --device cuda --n-model-instances 5
+# inferece benchmarking script for CFM model. usage: python inference.py --model-path /path/to/model.pt --config-path /path/to/config.yaml --source-file /path/to/data --n-objects 1000 --batch-size 32 --device cuda --n-model-instances 5 --num-threads 4
 import yaml
 import time
 import os

@@ -119,7 +119,7 @@ class TrainDataPreprocessor(object):
 
 
 class TestDataPreprocessor(object):
-    def __init__(self, data_kwargs, scaler_x=None, scaler_y=None):
+    def __init__(self, data_kwargs, scaler_x=None, scaler_y=None, allow_nans=False):
         self.data = np.load(data_kwargs["dataset_path"])
         self.standardize = data_kwargs["standardize"]
         if "flavour_ohe" in data_kwargs:
@@ -130,7 +130,7 @@ class TestDataPreprocessor(object):
         self.N_test = data_kwargs["N_test"]
         self.scaler_x = scaler_x
         self.scaler_y = scaler_y
-        print(self.data.shape)
+        # print(self.data.shape)
         self.X = self.data[
             self.N_train : self.N_train + self.N_test,
             (5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21),
@@ -143,10 +143,11 @@ class TestDataPreprocessor(object):
         # mass ratio
         self.X[:, 15] = self.X[:, 15] / self.Y[:, 3]
 
-        # throw away all NaNs from divisions by 0
-        nans_mask = np.isnan(self.X).any(axis=1)
-        self.X = self.X[~nans_mask]
-        self.Y = self.Y[~nans_mask]
+        if not allow_nans:
+            # throw away all NaNs from divisions by 0
+            nans_mask = np.isnan(self.X).any(axis=1)
+            self.X = self.X[~nans_mask]
+            self.Y = self.Y[~nans_mask]
 
         self.Y[:, 4] = np.abs(self.Y[:, 4])
         # smearing of N constituents to let the network learn the distribution

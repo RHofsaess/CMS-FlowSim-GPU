@@ -12,3 +12,4 @@ torchcfm==1.0.5
 torchdiffeq==0.2.3
 torchdyn==1.0.6
 tqdm==4.66.1
+pynvml

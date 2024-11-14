@@ -28,18 +28,20 @@ def parse_args():
     parser.add_argument('--gpu-memory-limit', type=float, help='GPU memory limit in GB')
     parser.add_argument('--num-threads', type=int, help='Number of PyTorch threads to use')
     parser.add_argument('--monitor-interval', type=float, default=1.0, help='Resource monitoring interval in seconds')
+    parser.add_argument('--gpu-id', type=int, default=0, help='GPU device ID to use (default: 0)')
     return parser.parse_args()
 
 class ResourceMonitor:
-    def __init__(self, interval=1.0):
+    def __init__(self, interval=1.0, gpu_id=0):
         self.interval = interval
         self.running = False
         self.stats = {'cpu': [], 'ram': [], 'gpu_util': [], 'gpu_mem': []}
+        self.gpu_id = gpu_id
         
         # Initialize NVML for GPU monitoring
         try:
             pynvml.nvmlInit()
-            self.gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+            self.gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(self.gpu_id)
             self.has_gpu = True
         except:
             self.has_gpu = False
@@ -94,9 +96,15 @@ def setup_resource_limits(args):
     if args.num_threads:
         torch.set_num_threads(args.num_threads)
     
-    # Set GPU memory limit if specified
-    if args.gpu_memory_limit and torch.cuda.is_available():
-        torch.cuda.set_per_process_memory_fraction(args.gpu_memory_limit)
+    # Set GPU device and memory limit if specified
+    if args.device == 'cuda':
+        if torch.cuda.is_available():
+            torch.cuda.set_device(args.gpu_id)
+            if args.gpu_memory_limit:
+                torch.cuda.set_per_process_memory_fraction(args.gpu_memory_limit)
+        else:
+            print("Warning: CUDA requested but not available. Falling back to CPU.")
+            args.device = 'cpu'
 
 def load_data(source_file, n_objects, data_kwargs):
     # Load only the required test data
@@ -117,11 +125,11 @@ def run_benchmark(args, config):
     # Setup resource limits
     setup_resource_limits(args)
     
-    # Initialize resource monitor
-    monitor = ResourceMonitor(interval=args.monitor_interval)
+    # Initialize resource monitor with specified GPU
+    monitor = ResourceMonitor(interval=args.monitor_interval, gpu_id=args.gpu_id)
     monitor.start()
     
-    device = torch.device(args.device)
+    device = torch.device(f"{args.device}:{args.gpu_id}" if args.device == 'cuda' else args.device)
     total_time = 0
     total_objects = 0
     

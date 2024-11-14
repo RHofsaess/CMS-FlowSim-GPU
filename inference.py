@@ -15,6 +15,7 @@ import psutil
 import pynvml
 import threading
 from contextlib import contextmanager
+import json  # Add this import at the top
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -29,6 +30,7 @@ def parse_args():
     parser.add_argument('--num-threads', type=int, help='Number of PyTorch threads to use')
     parser.add_argument('--monitor-interval', type=float, default=1.0, help='Resource monitoring interval in seconds')
     parser.add_argument('--gpu-id', type=int, default=0, help='GPU device ID to use (default: 0)')
+    parser.add_argument('--output-json', type=str, help='Path to save benchmark results as JSON')
     return parser.parse_args()
 
 class ResourceMonitor:
@@ -121,6 +123,42 @@ def load_data(source_file, n_objects, data_kwargs):
     
     return X_test, Y_test
 
+def format_benchmark_results(total_objects, total_time, resource_stats, device, num_threads, gpu_memory_limit=None):
+    results = {
+        "performance": {
+            "total_objects": total_objects,
+            "total_time_seconds": total_time,
+            "throughput_objects_per_second": total_objects / total_time
+        },
+        "resource_usage": {
+            "cpu": {
+                "average_percent": float(f"{resource_stats['cpu_mean']:.1f}"),
+                "peak_percent": float(f"{resource_stats['cpu_max']:.1f}")
+            },
+            "ram": {
+                "average_percent": float(f"{resource_stats['ram_mean']:.1f}"),
+                "peak_percent": float(f"{resource_stats['ram_max']:.1f}")
+            }
+        },
+        "configuration": {
+            "device": str(device),
+            "num_threads": num_threads
+        }
+    }
+    
+    if gpu_memory_limit:
+        results["configuration"]["gpu_memory_limit_gb"] = gpu_memory_limit
+    
+    if 'gpu_util_mean' in resource_stats:
+        results["resource_usage"]["gpu"] = {
+            "utilization_average_percent": float(f"{resource_stats['gpu_util_mean']:.1f}"),
+            "utilization_peak_percent": float(f"{resource_stats['gpu_util_max']:.1f}"),
+            "memory_average_percent": float(f"{resource_stats['gpu_mem_mean']:.1f}"),
+            "memory_peak_percent": float(f"{resource_stats['gpu_mem_max']:.1f}")
+        }
+    
+    return results
+
 def run_benchmark(args, config):
     # Setup resource limits
     setup_resource_limits(args)
@@ -206,6 +244,25 @@ def run_benchmark(args, config):
             print(f"GPU Utilization Peak: {resource_stats['gpu_util_max']:.1f}%")
             print(f"GPU Memory Average: {resource_stats['gpu_mem_mean']:.1f}%")
             print(f"GPU Memory Peak: {resource_stats['gpu_mem_max']:.1f}%")
+        
+        # Format and save results as JSON if requested
+        if args.output_json:
+            results = format_benchmark_results(
+                total_objects=total_objects,
+                total_time=total_time,
+                resource_stats=resource_stats,
+                device=device,
+                num_threads=torch.get_num_threads(),
+                gpu_memory_limit=args.gpu_memory_limit
+            )
+            
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(os.path.abspath(args.output_json)), exist_ok=True)
+            
+            # Save to JSON file
+            with open(args.output_json, 'w') as f:
+                json.dump(results, f, indent=2)
+            print(f"\nBenchmark results saved to: {args.output_json}")
     
     finally:
         monitor.stop()

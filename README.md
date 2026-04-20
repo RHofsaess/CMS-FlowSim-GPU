@@ -22,3 +22,8 @@ the python packages required are listed under requirements.txt
 
 ## Acknowledgements
 Contains code inspired by [dingo](https://github.com/dingo-gw/dingo/tree/FMPE), [nflows](https://github.com/bayesiains/nflows) and [torchcfm](https://github.com/atong01/conditional-flow-matching) code bases, released under MIT License
+
+
+## Benchmarking Additions
+To run with AMD, it is required to install a rocm compatible pytorch version. Newest at the moment (04.2026) is `pip3 install torch --index-url https://download.pytorch.org/whl/rocm6.4`.
+Furthermore, it is required to use the shipped `amdsmi` library. This is done with: `export PYTHONPATH=/opt/rocm/share/amd_smi:$PYTHONPATH`.

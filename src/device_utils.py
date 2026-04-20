@@ -8,8 +8,8 @@ Supports:
   - CPU fallback (automatic — no separate wheel needed)
 
 Use one of two container images, install PyTorch accordingly:
-  NVIDIA (CUDA container):    pip install torch>=2.9.0
-  AMD   (ROCm 7.2 container): pip install torch>=2.9.0 --index-url https://download.pytorch.org/whl/rocm7.2
+  NVIDIA: pip install torch
+  AMD: pip install torch --index-url https://download.pytorch.org/whl/rocm6.4  # 7.X not available yet :(
 
 CPU is always available as a fallback within either container.
 """

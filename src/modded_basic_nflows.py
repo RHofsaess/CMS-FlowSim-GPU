@@ -794,7 +794,7 @@ def load_mixture_model(device, model_dir=None, filename=None):
         )
 
     p = Path(model_dir)
-    checkpoint = torch.load(p / filename, map_location="cpu")
+    checkpoint = torch.load(p / filename, map_location="cpu", weights_only=False)
 
     model_hyperparams = checkpoint["model_hyperparams"]
     # added because of a bug in the old create_mixture_flow_model function

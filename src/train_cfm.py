@@ -5,6 +5,7 @@ import os
 import sys
 import numpy as np
 import torch
+from device_utils import get_device
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "data"))
@@ -34,9 +35,7 @@ from modded_cfm import (
 
 
 def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
-    if gpu != None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("Using device:", device)
+    device = get_device(gpu_requested=(gpu is not None))
 
     if train_kwargs["log_name"] is not None:
         log_dir = "./logs/%s" % train_kwargs["log_name"]

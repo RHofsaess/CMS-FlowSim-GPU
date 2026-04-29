@@ -6,11 +6,8 @@ numpy>=1.26.4
 PyYAML>=6.0.1
 scikit_learn>=1.4.0
 scipy>=1.12.0
-# PyTorch:
-# - NVIDIA: pip install torch>=2.9.0
-# - AMD: pip install torch>=2.9.0 --index-url https://download.pytorch.org/whl/rocm7.2
-# CPU fallback is automatic in both
-torch>=2.9.0
+torch>=2.8.0
+nvidia-ml-py
 torchcfm>=1.0.5
 torchdiffeq>=0.2.3
 torchdyn>=1.0.6

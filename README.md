@@ -1,6 +1,11 @@
 # FlowSim
 Code for training the models of the paper: [End-to-end simulation of particle physics events with Flow Matching and generator Oversampling](https://iopscience.iop.org/article/10.1088/2632-2153/ad563c) ([arXiv:2402.13684](https://arxiv.org/abs/2402.13684)).
 
+**Update to support AMD and newer torch versions.**
+
+For AMD support, manually installing pytorch with ROCm support is required: 
+`$ pip install torch>=2.8.0 --index-url https://download.pytorch.org/whl/rocm6.4 --force-reinstall` 
+
 ## Generate data
 To generate 100k events (about 500k jets) for training on a ttbar dataset, run data/generator.py
 ```

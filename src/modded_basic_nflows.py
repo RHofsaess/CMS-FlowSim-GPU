@@ -45,14 +45,14 @@ class AffineCouplingTransform(CouplingTransformMAF):
     GENERAL_SCALE_ACTIVATION = lambda x: (softplus(x) + 1e-3).clamp(0, 30)
 
     def __init__(
-        self,
-        mask,
-        transform_net_create_fn,
-        unconditional_transform=None,
-        scale_activation="softplus",
-        init_identity=True,
-        shift_clamp=[-50, 50],
-        scale_clamp=[0, 50],
+            self,
+            mask,
+            transform_net_create_fn,
+            unconditional_transform=None,
+            scale_activation="softplus",
+            init_identity=True,
+            shift_clamp=[-50, 50],
+            scale_clamp=[0, 50],
     ):
         self.scale_clamp = scale_clamp
         self.shift_clamp = shift_clamp
@@ -67,7 +67,7 @@ class AffineCouplingTransform(CouplingTransformMAF):
         return 2
 
     def _scale_and_shift(self, transform_params):
-        unconstrained_scale = transform_params[:, self.num_transform_features :, ...]
+        unconstrained_scale = transform_params[:, self.num_transform_features:, ...]
         shift = transform_params[:, : self.num_transform_features, ...].clamp(
             self.shift_clamp[0], self.shift_clamp[1]
         )
@@ -93,15 +93,15 @@ class AffineCouplingTransform(CouplingTransformMAF):
 
 class MLP(nn.Module):
     def __init__(
-        self,
-        in_shape: int,
-        out_shape: int,
-        context_features: int,
-        hidden_sizes: list,
-        activation=F.relu,
-        activate_output: bool = False,
-        batch_norm: bool = False,
-        dropout_probability: float = 0.0,
+            self,
+            in_shape: int,
+            out_shape: int,
+            context_features: int,
+            hidden_sizes: list,
+            activation=F.relu,
+            activate_output: bool = False,
+            batch_norm: bool = False,
+            dropout_probability: float = 0.0,
     ):
         super().__init__()
 
@@ -125,7 +125,7 @@ class MLP(nn.Module):
         self.network = nn.Sequential(*layers)
 
     def forward(
-        self, inputs: torch.Tensor, context: torch.Tensor = None
+            self, inputs: torch.Tensor, context: torch.Tensor = None
     ) -> torch.Tensor:
         x = torch.cat((inputs, context), dim=1) if context else inputs
         return self.network(x)
@@ -133,17 +133,17 @@ class MLP(nn.Module):
 
 class EmbedATT(nn.Module):
     def __init__(
-        self,
-        in_shape,
-        embed_shape,
-        out_shape,
-        context_features,
-        hidden_sizes,
-        activation=F.relu,
-        activate_output=False,
-        layer_norm=False,
-        dropout_probability=0.0,
-        num_heads=5,
+            self,
+            in_shape,
+            embed_shape,
+            out_shape,
+            context_features,
+            hidden_sizes,
+            activation=F.relu,
+            activate_output=False,
+            layer_norm=False,
+            dropout_probability=0.0,
+            num_heads=5,
     ):
         super().__init__()
         self._in_shape = in_shape
@@ -218,20 +218,20 @@ class EmbedATT(nn.Module):
 
 class MaskedAffineAutoregressiveTransformM(AutoregressiveTransform):
     def __init__(
-        self,
-        features,
-        hidden_features,
-        context_features=None,
-        num_blocks=2,
-        use_residual_blocks=True,
-        random_mask=False,
-        activation=F.relu,
-        dropout_probability=0.0,
-        use_batch_norm=False,
-        init_identity=True,
-        affine_type="sigmoid",
-        shift_clamp=[-50, 50],
-        scale_clamp=[0, 50],
+            self,
+            features,
+            hidden_features,
+            context_features=None,
+            num_blocks=2,
+            use_residual_blocks=True,
+            random_mask=False,
+            activation=F.relu,
+            dropout_probability=0.0,
+            use_batch_norm=False,
+            init_identity=True,
+            affine_type="sigmoid",
+            shift_clamp=[-50, 50],
+            scale_clamp=[0, 50],
     ):
         self.features = features
         made = made_module.MADE(
@@ -339,23 +339,23 @@ class MaskedAffineAutoregressiveTransformM(AutoregressiveTransform):
 
 class MaskedPiecewiseRationalQuadraticAutoregressiveTransformM(AutoregressiveTransform):
     def __init__(
-        self,
-        features,
-        hidden_features,
-        context_features=None,
-        num_bins=10,
-        tails=None,
-        tail_bound=1.0,
-        num_blocks=2,
-        use_residual_blocks=True,
-        random_mask=False,
-        activation=F.relu,
-        dropout_probability=0.0,
-        use_batch_norm=False,
-        init_identity=True,
-        min_bin_width=modded_spline.DEFAULT_MIN_BIN_WIDTH,
-        min_bin_height=modded_spline.DEFAULT_MIN_BIN_HEIGHT,
-        min_derivative=modded_spline.DEFAULT_MIN_DERIVATIVE,
+            self,
+            features,
+            hidden_features,
+            context_features=None,
+            num_bins=10,
+            tails=None,
+            tail_bound=1.0,
+            num_blocks=2,
+            use_residual_blocks=True,
+            random_mask=False,
+            activation=F.relu,
+            dropout_probability=0.0,
+            use_batch_norm=False,
+            init_identity=True,
+            min_bin_width=modded_spline.DEFAULT_MIN_BIN_WIDTH,
+            min_bin_height=modded_spline.DEFAULT_MIN_BIN_HEIGHT,
+            min_derivative=modded_spline.DEFAULT_MIN_DERIVATIVE,
     ):
         self.num_bins = num_bins
         self.min_bin_width = min_bin_width
@@ -402,8 +402,8 @@ class MaskedPiecewiseRationalQuadraticAutoregressiveTransformM(AutoregressiveTra
         )
 
         unnormalized_widths = transform_params[..., : self.num_bins]
-        unnormalized_heights = transform_params[..., self.num_bins : 2 * self.num_bins]
-        unnormalized_derivatives = transform_params[..., 2 * self.num_bins :]
+        unnormalized_heights = transform_params[..., self.num_bins: 2 * self.num_bins]
+        unnormalized_derivatives = transform_params[..., 2 * self.num_bins:]
 
         if hasattr(self.autoregressive_net, "hidden_features"):
             unnormalized_widths /= np.sqrt(self.autoregressive_net.hidden_features)
@@ -441,18 +441,18 @@ class MaskedPiecewiseRationalQuadraticAutoregressiveTransformM(AutoregressiveTra
 
 class PiecewiseRationalQuadraticCouplingTransformM(PiecewiseCouplingTransformRQS):
     def __init__(
-        self,
-        mask,
-        transform_net_create_fn,
-        num_bins=10,
-        tails=None,
-        tail_bound=1.0,
-        apply_unconditional_transform=False,
-        img_shape=None,
-        init_identity=True,
-        min_bin_width=modded_spline.DEFAULT_MIN_BIN_WIDTH,
-        min_bin_height=modded_spline.DEFAULT_MIN_BIN_HEIGHT,
-        min_derivative=modded_spline.DEFAULT_MIN_DERIVATIVE,
+            self,
+            mask,
+            transform_net_create_fn,
+            num_bins=10,
+            tails=None,
+            tail_bound=1.0,
+            apply_unconditional_transform=False,
+            img_shape=None,
+            init_identity=True,
+            min_bin_width=modded_spline.DEFAULT_MIN_BIN_WIDTH,
+            min_bin_height=modded_spline.DEFAULT_MIN_BIN_HEIGHT,
+            min_derivative=modded_spline.DEFAULT_MIN_DERIVATIVE,
     ):
         self.num_bins = num_bins
         self.min_bin_width = min_bin_width
@@ -488,8 +488,8 @@ class PiecewiseRationalQuadraticCouplingTransformM(PiecewiseCouplingTransformRQS
 
     def _piecewise_cdf(self, inputs, transform_params, inverse=False):
         unnormalized_widths = transform_params[..., : self.num_bins]
-        unnormalized_heights = transform_params[..., self.num_bins : 2 * self.num_bins]
-        unnormalized_derivatives = transform_params[..., 2 * self.num_bins :]
+        unnormalized_heights = transform_params[..., self.num_bins: 2 * self.num_bins]
+        unnormalized_derivatives = transform_params[..., 2 * self.num_bins:]
 
         if hasattr(self.transform_net, "hidden_features"):
             unnormalized_widths /= np.sqrt(self.transform_net.hidden_features)
@@ -569,12 +569,12 @@ def create_mixture_flow_model(input_dim, context_dim, base_kwargs):
         elif base_kwargs["maf"]["activation"] == "softplus":
             activationDef = F.softplus
         elif base_kwargs["maf"]["activation"] == "leaky_relu":
-            activationDef = F.leaky_relu 
+            activationDef = F.leaky_relu
         elif base_kwargs["maf"]["activation"] == "silu":
             activationDef = F.silu
         else:
             raise ValueError("Unknown activation")
-        
+
         transform.append(
             MaskedAffineAutoregressiveTransformM(
                 features=input_dim,
@@ -737,14 +737,14 @@ def create_mixture_flow_model(input_dim, context_dim, base_kwargs):
 
 
 def save_model(
-    epoch,
-    model,
-    scheduler,
-    train_history,
-    test_history,
-    name,
-    model_dir=None,
-    optimizer=None,
+        epoch,
+        model,
+        scheduler,
+        train_history,
+        test_history,
+        name,
+        model_dir=None,
+        optimizer=None,
 ):
     """Save a model and optimizer to file.
     Args:
@@ -794,7 +794,7 @@ def load_mixture_model(device, model_dir=None, filename=None):
         )
 
     p = Path(model_dir)
-    checkpoint = torch.load(p / filename, map_location="cpu")
+    checkpoint = torch.load(p / filename, map_location="cpu", weights_only=False)
 
     model_hyperparams = checkpoint["model_hyperparams"]
     # added because of a bug in the old create_mixture_flow_model function

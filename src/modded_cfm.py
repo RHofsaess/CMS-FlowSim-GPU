@@ -6,7 +6,6 @@ import math
 import torch
 import torch.nn as nn
 
-
 import torch.nn as nn
 import torch
 
@@ -14,6 +13,7 @@ import math
 import torch
 
 from torchcfm.conditional_flow_matching import ConditionalFlowMatcher, pad_t_like_x
+
 
 class ModelWrapper(nn.Module):
     def __init__(self, base_model, context_dim=6):
@@ -74,7 +74,6 @@ def pad_t_like_x(t, x):
         return t
     return t.reshape(-1, *([1] * (x.dim() - 1)))
 
-    
 
 class AlphaTConditionalFlowMatcher(ConditionalFlowMatcher):
     """
@@ -137,7 +136,7 @@ class AlphaTConditionalFlowMatcher(ConditionalFlowMatcher):
         ----------
         [1] Improving and Generalizing Flow-Based Generative Models with minibatch optimal transport, Preprint, Tong et al.
         """
-        t = torch.pow(torch.rand(x0.shape[0]), 1/(1+self.alpha)).type_as(x0)
+        t = torch.pow(torch.rand(x0.shape[0]), 1 / (1 + self.alpha)).type_as(x0)
         eps = self.sample_noise_like(x0)
         xt = self.sample_xt(x0, x1, t, eps)
         ut = self.compute_conditional_flow(x0, x1, t, xt)
@@ -221,7 +220,7 @@ class MyTargetConditionalFlowMatcher(ConditionalFlowMatcher):
         del x0
         t = pad_t_like_x(t, x1)
         return (x1 - (1 - self.sigma) * xt) / (1 - (1 - self.sigma) * t)
-    
+
 
 class MyAlphaTTargetConditionalFlowMatcher(AlphaTConditionalFlowMatcher):
     """AlphaT + Lipman et al. 2023 style target OT conditional flow matching. This class inherits the

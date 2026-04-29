@@ -195,7 +195,7 @@ def validate(samples, X, Y, save_dir, epoch, writer):
     print(f"covariance matching = {covariance_match}")
     if writer is not None:
         writer.add_scalar("covariance_matching", covariance_match, epoch)
-    
+
     # compute fgd
     fgd = calculate_fgd(samples, X)
     print(f"FGD = {fgd}")

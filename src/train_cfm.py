@@ -5,6 +5,7 @@ import os
 import sys
 import numpy as np
 import torch
+from device_utils import get_device
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "data"))
@@ -34,9 +35,7 @@ from modded_cfm import (
 
 
 def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
-    if gpu != None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("Using device:", device)
+    device = get_device(gpu_requested=(gpu is not None))
 
     if train_kwargs["log_name"] is not None:
         log_dir = "./logs/%s" % train_kwargs["log_name"]
@@ -86,8 +85,7 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
     epochs = train_kwargs["epochs"]
     batch_size = data_kwargs["batch_size"]
     test_batch_size = data_kwargs["test_batch_size"]
-    if train_kwargs["resume_checkpoint"] is None and os.path.exists(
-        os.path.join(save_dir, "checkpoint-latest.pt")
+    if train_kwargs["resume_checkpoint"] is None and os.path.exists(os.path.join(save_dir, "checkpoint-latest.pt")
     ):
         resume_checkpoint = "checkpoint-latest.pt"
         # use the latest checkpoint
@@ -121,7 +119,6 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
     else:
         print("Scheduler not found, proceeding without it")
 
-
     train_dataset = TrainDataPreprocessor(data_kwargs)
     X_train, Y_train = train_dataset.get_dataset()
     test_dataset = TestDataPreprocessor(
@@ -130,7 +127,7 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
         scaler_y=train_dataset.scaler_y,
     )
     X_test, Y_test = test_dataset.get_dataset()
-    
+
     # send data to device
     X_train = torch.tensor(X_train).float().to(device)
     Y_train = torch.tensor(Y_train).float().to(device)
@@ -175,8 +172,8 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
         noise_dist = torch.randn
         print("Gaussian noise")
     elif (data_kwargs["noise_distribution"] == "uniform") & (
-        base_kwargs["cfm"]["matching_type"] == "Default"
-        or base_kwargs["cfm"]["matching_type"] == "AlphaT"
+            base_kwargs["cfm"]["matching_type"] == "Default"
+            or base_kwargs["cfm"]["matching_type"] == "AlphaT"
     ):
         noise_dist = torch.rand
         print("Uniform noise")
@@ -184,7 +181,7 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
         raise ValueError(
             "Noise distribution not found for this combination of matching type and noise distribution"
         )
-    
+
     print("Start epoch: %d End epoch: %d" % (start_epoch, epochs))
     train_history = []
     test_history = []
@@ -204,11 +201,11 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
         if len(X_train) % batch_size != 0:
             total_batches += 1
         with tqdm(
-            total=total_batches, desc="Training", dynamic_ncols=True, ascii=True
+                total=total_batches, desc="Training", dynamic_ncols=True, ascii=True
         ) as pbar:
             for i in range(0, len(X_train), batch_size):
-                X_batch = X_train[i : i + batch_size]
-                Y_batch = Y_train[i : i + batch_size]
+                X_batch = X_train[i: i + batch_size]
+                Y_batch = Y_train[i: i + batch_size]
 
                 optimizer.zero_grad()
 
@@ -239,8 +236,8 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
             test_loss = torch.tensor(0.0).to(device)
 
             for i in range(0, len(X_test), test_batch_size):
-                X_batch = X_test[i : i + test_batch_size]
-                Y_batch = Y_test[i : i + test_batch_size]
+                X_batch = X_test[i: i + test_batch_size]
+                Y_batch = Y_test[i: i + test_batch_size]
 
                 x0 = noise_dist(X_batch.shape[0], X_batch.shape[1]).to(device)
                 t, xt, ut = FM.sample_location_and_conditional_flow(x0, X_batch)
@@ -286,12 +283,12 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
             t_span = torch.linspace(0, 1, timesteps).to(device)
             with torch.no_grad():
                 with tqdm(
-                    total=len(X_test) // test_batch_size,
-                    desc="Sampling",
-                    dynamic_ncols=True,
+                        total=len(X_test) // test_batch_size,
+                        desc="Sampling",
+                        dynamic_ncols=True,
                 ) as pbar:
                     for i in range(0, len(X_test), test_batch_size):
-                        Y_batch = Y_test[i : i + test_batch_size, :]
+                        Y_batch = Y_test[i: i + test_batch_size, :]
                         # protection against underflows in torchdiffeq solver
                         while True:
                             try:
@@ -300,7 +297,7 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
                                 )
 
                                 initial_conditions = torch.cat([x0_sample, Y_batch], dim=-1)
-                        
+
                                 # NOTE we take only the last timestep
                                 if base_kwargs["cfm"]["ode_backend"] == "torchdyn":
                                     samples = node.trajectory(
@@ -350,7 +347,6 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
             print("Starting evaluation")
 
             validate(samples, X_test_cpu, Y_test_cpu, save_dir, epoch, writer)
-
 
         if epoch % train_kwargs["save_freq"] == 0:
             save_cfm_model(
